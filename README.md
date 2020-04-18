@@ -56,7 +56,7 @@ En nuestro caso empleamos dos ordenadores, el principal y el host2. Hemos establ
 
 ![](capturas/firewall5.png)
 
-## __Ejemplo 01: `ip-01-input.sh__
+## __Ejemplo 02: `ip-02-ouput.sh__
 
 
 #### __COMPROBACIONES__  
@@ -65,8 +65,10 @@ En nuestro caso empleamos dos ordenadores, el principal y el host2. Hemos establ
 
 #### __COMPROBACIONES__  
 
-## __Ejemplo 04:__
+## __Ejemplo 04:`ip-04-icmp.sh`__
 En este ejemplo utilizaremos unas reglas personalizadas para los pings que puede hacer o no nuestro ordenador principal respecto a diferentes casos configurados en iptables.  
+
+[script ip-default.sh](practica4/ip-04-icmp.sh)  
 
 #### __COMPROBACIONES__  
 + No permitir hacer pings al exterior:  
