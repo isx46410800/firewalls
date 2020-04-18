@@ -1,6 +1,6 @@
 #! /bin/bash
 # @edt ASIX M11-SAD Curs 2018-2019
-# iptables
+# iptables Miguel Amorós
 
 #echo 1 > /proc/sys/ipv4/ip_forward
 
@@ -22,8 +22,11 @@ iptables -A INPUT  -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
 
 # obrir la nostra ip
-iptables -A INPUT -s 192.168.0.18 -j ACCEPT
-iptables -A OUTPUT -d 192.168.0.18 -j ACCEPT
+iptables -A INPUT -s 192.168.1.104 -j ACCEPT
+iptables -A OUTPUT -d 192.168.1.104 -j ACCEPT
+
+# Mostrar les regles generades
+iptables -L -t nat
 
 
 

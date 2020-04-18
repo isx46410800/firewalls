@@ -1,6 +1,6 @@
 #! /bin/bash
 # @edt ASIX M11-SAD Curs 2018-2019
-# iptables
+# iptables Miguel Amorós
 
 #echo 1 > /proc/sys/ipv4/ip_forward
 
@@ -29,11 +29,13 @@ iptables -A OUTPUT -d 192.168.0.18 -j ACCEPT
 ############################################
 # No permetre fer pings cap a l'exterior
   #iptables -A OUTPUT -p icmp --icmp-type 8 -j DROP
-# No podem fer pings cap al i26
-  #iptables -A OUTPUT -p icmp --icmp-type 8 -d 192.168.2.56 -j DROP
+# No podem fer pings cap al host2
+ # iptables -A OUTPUT -p icmp --icmp-type 8 -d 192.168.1.44 -j DROP
 # No permetem respondre als pings que ens facin
-  #iptables -A OUTPUT -p icmp --icmp-type 0 -j DROP
+ # iptables -A OUTPUT -p icmp --icmp-type 0 -j DROP
 # No permetem rebre respostes de ping
   iptables -A INPUT -p icmp --icmp-type 0 -j DROP
 
+# Mostrar les regles generades
+iptables -L -t nat
 
