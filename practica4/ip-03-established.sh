@@ -44,9 +44,3 @@ iptables -A OUTPUT -d 192.168.1.104 -j ACCEPT
 
 # Mostrar les regles generades
 iptables -L -t nat
-
-
-
-
-
-

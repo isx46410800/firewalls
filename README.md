@@ -174,10 +174,25 @@ Conceptos del estado:
   `iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT`  
   `iptables -A INPUT  -p tcp --sport 80 -m tcp -m state --state RELATED,ESTABLISHED  -j ACCEPT`  
 
+![](capturas/fire18.png)  
+
+> Aquí vemos el filtrado por wireshark de una conexión de salida del principal al host2  
+
+![](capturas/fire19.png)  
+
+> Aquí vemos el filtrado por wireshark de una conexión de entrada de net1 al principal
 
 + Ofrecer el servicio web, permitir solo respuestas a peticiones ya establecidas:  
   `iptables -A OUTPUT -p tcp --sport 80 -m tcp -m state --state RELATED,ESTABLISHED -j ACCEPT`     
   `iptables -A INPUT -p tcp --dport 80 -j ACCEPT`  
+
+![](capturas/firewall10.png)  
+
+> Aquí vemos el filtrado por wireshark de una conexión de salida de host2 al principal
+
+![](capturas/fire20.png)  
+
+> Aquí vemos el filtrado por wireshark de una conexión de entrada de host2 al principal
 
 + Ofrecer el servicio web a todos excepto a host2:  
   `iptables -A OUTPUT -p tcp --sport 80 -m tcp -m state --state RELATED,ESTABLISHED -j ACCEPT`  
