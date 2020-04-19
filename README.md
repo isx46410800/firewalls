@@ -155,7 +155,9 @@ Conceptos del estado:
 + ESTABLISHED: El paquete seleccionado se asocia con otros paquetes en una conexión establecida.
 + INVALID: El paquete seleccionado no puede ser asociado a una conexión conocida.
 + NEW: El paquete seleccionado o bien está creando una nueva conexión o bien forma parte de una conexión de dos caminos que antes no había sido vista.
-+ RELATED: El paquete seleccionado está iniciando una nueva conexión en algún punto de la conexión existente.
++ RELATED: El paquete seleccionado está iniciando una nueva conexión en algún punto de la conexión existente.  
+
+En este ejemplo trabajamos para ver la diferencia en no permitir un host acceder a los servicios web externos (reglas OUTPUT) y en permitir el tráfico exterior al servidor web del propio host y permitir que este servidor emita respuestas http a los clientes (reglas INPUT). También tener en cuenta que para permitir el tráfico de respuesta será una regla OUTPUT.  
 
 [script ip-03-established.sh](practica4/ip-03-established.sh)  
 
