@@ -244,7 +244,7 @@ En este ejemplo utilizaremos unas reglas personalizadas para los pings que puede
 > Regla para que no podamos recibir respuesta de los pings que hagamos al exterior
 
 ## __Ejemplo 05: `ip-05.nat.sh`__
-En este ejemplo vemos el concepto de NAT, el cual hacemos que un host actue como router activando el bit de forwading.
+En este ejemplo vemos el concepto de NAT, el cual hacemos que un host actue como router activando el bit de forwading. Permitiremos que redes internas de un host puedan comunicarse al exterior enmascarando su ip interna en la interficie local y externa del host que actua como router para poder hacer comunicaciones por un puerto de salida dinámico.  
 
 [script ip-05-nat.sh](practica4/ip-05-nat.sh)  
 
