@@ -346,9 +346,81 @@ target     prot opt source               destination
 ![](capturas/fire26.png)  
 > Vemos que el HOSTB1 de la red netB tiene de nuevo conexión al exterior con host2 y 8.8.8.8
 
-## __Ejemplo 06:__
+## __Ejemplo 06: `ip-06-forward.sh`__  
+En este ejemplo vemos las reglas de forward, que consiste en aplicarlas cuando un router o firewall hace la tarea de encaminar los paquetes que lo cruzan.  
+
+[script ip-06-forward.sh](practica4/ip-06-forward.sh)
 
 #### __COMPROBACIONES__  
+
++ NetA no puede acceder a la netB:
+  `iptables -A FORWARD -s 172.18.0.0/16 -d 172.19.0.0/16 -j REJECT`
+
+![](capturas/fire27.png)  
+> Vemos que no es posible conectar desde la netA a la netB, ya que se indica que cuando se haga conexión con la red de la netB se rechace y se comunique el error con REJECT
+
++ NetA no puede acceder al hostB2:
+  `iptables -A FORWARD -i br-6392860b3d9e -d 172.19.0.3 -j REJECT`  
+  `iptables -A FORWARD -s 172.18.0.0/16 -d 172.19.0.3 -j REJECT`  
+
+![](capturas/fire28.png)  
+> Vemos que hemos denegado la conexión de los host de la red netA con el hostB2 de la netB. En cambio, podemos comprobar que no hay problema con conectar con el hostB1.
+
++ HostA1 no puede conectar con hostB1:
+  `iptables -A FORWARD -s 172.18.0.2 -d 172.19.0.2 -j REJECT`  
+
+![](capturas/fire29.png)  
+> Vemos que el HOSTA1 se le ha denegado la conexión con el hostB2 pero no tiene problemas en acceder a hostB2 y hostA2.
+
++ NetA no puede acceder a puertos 13 de nadie:
+  `iptables -A FORWARD -p tcp -s 172.18.0.0/16 --dport 13 -j REJECT`  
+
+![](capturas/fire30.png)  
+> Vemos que los host de la netA se le ha denegado la conexión con cualquier host por el puerto 13, pero por otro puerto no hay problemas.
+
++ NetA no puede acceder a la netB por los puertos 2013:  
+  `iptables -A FORWARD -p tcp -s 172.18.0.0/16 -d 172.19.0.0/16 --dport 2013 -j REJECT`  
+
+![](capturas/fire31.png)  
+> Vemos que los host de la netA se le ha denegado la conexión con los host de la netB por el puerto 2013
+
+![](capturas/fire32.png)  
+> Vemos que por otro puerto, no hay problema de conexión.
+
++ NetA permite navegar por internet pero nada más en el exterior:
+  `iptables -A FORWARD -s 172.18.0.0/16 -o enp4s0 -p tcp --dport 80 -j ACCEPT`  
+  `iptables -A FORWARD -d 172.18.0.0/16 -p tcp --sport 80 -i enp4s0 -m state --state RELATED,ESTABLISHED -j ACCEPT`  
+  `iptables -A FORWARD -s 172.18.0.0/16 -o enp4s0 -j REJECT`  
+  `iptables -A FORWARD -d 172.18.0.0/16 -i enp4s0 -j REJECT`  
+
+![](capturas/fire33.png)  
+> Vemos que podemos navegar al exterior desde la netA
+
+![](capturas/fire34.png)  
+> En cambio vemos que no podemos hacer otra cosa al exterior, si hacemos pings fuera, se rechaza.
+
++ xarxaA accedir port 2013 de totes les xarxes d'internet excepte de la xarxaZ
+  `iptables -A FORWARD -p tcp -s 172.18.0.0/16 -d 172.20.0.0/16 --dport 2013 -j REJECT`   
+  `iptables -A FORWARD -s 172.18.0.0/16 -p tcp --dport 2013 -o enp4s0  -j ACCEPT`  
+    + En este caso utilizamos una netZ(172.20.0.0) para hacer este ejemplo:  
+    ```
+    [isx46410800@miguel firewalls]$ docker run --rm --name hostZ1 -h hostZ1 --net netZ --privileged -d isx46410800/firewalls:net19
+    8a637f52b34c499be1767c6ff95af3fe6df4f2e742a26c9f518be0ab6dba5dce
+    [isx46410800@miguel firewalls]$ docker run --rm --name hostZ2 -h hostZ2 --net netZ --privileged -d isx46410800/firewalls:net19
+    3d1cc6b83027400b22b4b1c56a85cff1220b70a1861b23345dd5a009d0c82832
+    ```  
+    + Añadimos también la línea en el script para hacer nat en esta red interna también:  
+    `iptables -t nat -A POSTROUTING -s 172.20.0.0/16 -o enp4s0 -j MASQUERADE`  
+
+![](capturas/fire35.png)  
+> Vemos que podemos conectar con cualquier host por el puerto 2013.  
+
+![](capturas/fire36.png)  
+> En cambio, no podemos acceder por el puerto 2013 a los hosts de le netZ
+
++ Para evitar que es falsifique la ip de origen(SPOOFING) se utiliza la siguiente orden:
+  `iptables -A FORWARD  ! -s 172.18.0.0/16 -i br-7d521247ea41 -j DROP`  
+
 
 ## __Ejemplo 07:__
 
