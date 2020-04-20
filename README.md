@@ -243,9 +243,108 @@ En este ejemplo utilizaremos unas reglas personalizadas para los pings que puede
 
 > Regla para que no podamos recibir respuesta de los pings que hagamos al exterior
 
-## __Ejemplo 05:__
+## __Ejemplo 05: `ip-05.nat.sh`__
+En este ejemplo vemos el concepto de NAT, el cual hacemos que un host actue como router activando el bit de forwading.
+
+[script ip-05-nat.sh](practica4/ip-05-nat.sh)  
+
+Para activar NAT en nuestro host principal para que las redes internas privadas puedan salir al exterior:  
+```
+[root@miguel firewalls]# echo 1 > /proc/sys/net/ipv4/ip_forward
+[root@miguel firewalls]# cat /proc/sys/net/ipv4/ip_forward
+1
+```
 
 #### __COMPROBACIONES__  
+
++ Creamos dos redes internas con docker:  
+```
+[isx46410800@miguel ~]$ docker network create netA
+ae2000b70614f635956dbb49771fcb398de25efc36313bc14989d830b24df036
+[isx46410800@miguel ~]$ docker network create netB
+a2577e8c47a940c98507cd05019f38e36f514f202ef34a50cfc5aea77bfa527e
+[isx46410800@miguel ~]$ docker network create netZ
+497a82c6b1c83c88e8e5a69c73728411c39c858adba41011e54edb365a67ee8a
+```
+
++ Encendemos en cada red (netA y netB) dos hosts:  
+```
+[isx46410800@miguel ~]$ docker run --rm --name hostA1 -h hostA1 --net netA --privileged -d isx46410800/firewalls:net19
+1ee450755d3cffc0fbf9c037d7f38fcf0bfb243336bcd728010e765ecaf1d522
+[isx46410800@miguel ~]$ docker run --rm --name hostA2 -h hostA2 --net netA --privileged -d isx46410800/firewalls:net19
+e62d644808dab64a6787fc2fbdb131482d385ed42e0523792e974ff6ad70ab75
+[isx46410800@miguel ~]$ docker run --rm --name hostB1 -h hostB1 --net netB --privileged -d isx46410800/firewalls:net19
+cb73604669c50b8cbe63740d17675f8cda011331fb3d5da21a6d70dc1b27b8aa
+[isx46410800@miguel ~]$ docker run --rm --name hostB2 -h hostB2 --net netB --privileged -d isx46410800/firewalls:net19
+d9f54d44aa59fef8cc9963b41fb99d2ebaced2565340e70b892ce3b869403b6e
+[script ip-05.nat.sh](practica4/ip-05.nat.sh)  
+```
+
++  Vemos que está encendido todo correctamente:  
+```
+[isx46410800@miguel ~]$ docker ps
+CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS              PORTS               NAMES
+d9f54d44aa59        isx46410800/firewalls:net19   "/opt/docker/startup…"   2 minutes ago       Up 2 minutes                            hostB2
+cb73604669c5        isx46410800/firewalls:net19   "/opt/docker/startup…"   2 minutes ago       Up 2 minutes                            hostB1
+e62d644808da        isx46410800/firewalls:net19   "/opt/docker/startup…"   2 minutes ago       Up 2 minutes                            hostA2
+1ee450755d3c        isx46410800/firewalls:net19   "/opt/docker/startup…"   3 minutes ago       Up 3 minutes                            hostA1
+```
+
++ Vemos las IPs de cada host y red:  
+```
+[isx46410800@miguel ~]$ docker network inspect netA
+HOSTA1: 172.18.0.2/16
+HOSTA2: 172.18.0.3/16
+```
+```
+[isx46410800@miguel ~]$ docker network inspect netB
+HOSTB1: 172.19.0.2/16
+HOSTB2: 172.19.0.3/16
+```
+
++ Comprobamos conexión al exterior:  
+
+![](capturas/fire21.png)  
+> Vemos que el HOSTA1 de la red netA tiene conexión al exterior con host2 y 8.8.8.8
+
+![](capturas/fire22.png)  
+> Vemos que el HOSTB1 de la red netB tiene conexión al exterior con host2 y 8.8.8.8
+
++ Eliminamos las reglas con ip-default.sh pero cambiamos el bit de forwading en el script a 0:
+`echo 0 > /proc/sys/net/ipv4/ip_forward`  
+```
+[root@miguel firewalls]# ./ip-default.sh
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination         
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination         
+Chain DOCKER (0 references)
+target     prot opt source               destination         
+[root@miguel firewalls]# cat /proc/sys/net/ipv4/ip_forward
+0
+```
+> Con esto hacemos que nuestro host principal ya no actue como router, por lo tanto ya no puede enmascarar las ips de las redes internas privadas para que puedan salir al exterior y comunicarse tanto con la red local de mi casa como por ejemplo a google (8.8.8.8)
+
++ Comprobamos conexión al exterior:  
+
+![](capturas/fire23.png)  
+> Vemos que el HOSTA1 de la red netA no tiene conexión al exterior con host2 y 8.8.8.8
+
+![](capturas/fire24.png)  
+> Vemos que el HOSTB1 de la red netB no tiene conexión al exterior con host2 y 8.8.8.8
+
++ Ahora ejecutamos el script de [script ip-05-nat.sh](practica4/ip-05-nat.sh) y probamos de nuevo la conexión:  
+> Vemos que en el script volvemos a activar el bit de forwading, haciendo que actue como router de nuevo, abrimos nuestra interfície y enmascaramos las ips de las redes internas privadas a nuestra interficie para que se pueda comunicar al exterior(enp4s0)
+
+![](capturas/fire25.png)  
+> Vemos que el HOSTA1 de la red netA tiene de nuevo conexión al exterior con host2 y 8.8.8.8
+
+![](capturas/fire26.png)  
+> Vemos que el HOSTB1 de la red netB tiene de nuevo conexión al exterior con host2 y 8.8.8.8
 
 ## __Ejemplo 06:__
 

@@ -2,7 +2,8 @@
 # @edt ASIX M11-SAD Curs 2018-2019
 # iptables Miguel Amorós
 
-#echo 1 > /proc/sys/ipv4/ip_forward
+
+#echo 1 > /proc/sys/net/ipv4/ip_forward
 
 # Regles flush
 iptables -F
