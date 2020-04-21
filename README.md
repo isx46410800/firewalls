@@ -422,22 +422,75 @@ En este ejemplo vemos las reglas de forward, que consiste en aplicarlas cuando u
   `iptables -A FORWARD  ! -s 172.18.0.0/16 -i br-7d521247ea41 -j DROP`  
 
 
-## __Ejemplo 07:__
+## __Ejemplo 07: `ip-07-port-forwarding.sh`__  
+DNAT Especifica que el la dirección de destino del paquete debe modificarse (y todos los paquetes futuros en este la conexión también será destrozada), y las reglas deberían dejar de ser examinadas.
+
+La tabla de reglas NAT contiene tres listas llamadas «cadenas»: cada regla se examina por orden hasta que una coincide. Las tres cadenas se llaman PREROUTING (para Destination NAT, según los paquetes entran), POSTROUTING (para SOURCE NAT, según los paquetes salen), y OUTPUT (para Destination NAT con los paquetes generados en la propia máquina).
+
+En el caso de PREROUTING podremos modifcar los datos destino de la conexión según nos interese y antes de tomar la deción de enrutamiento. Así podremos desviar paquetes que vayan destinados al host local hacia otro host y viceversa. Sólo tiene sentido en el interfaz de entrada. Esto lo vamos a llamar DNAT (destination NAT)..
+
+Cuando utilizamos la cadena POSTROUTING podremos modificar los paquetes justo antes de devolverlos a la red. Podremos modificar los datos de origen, porque el destino ya se ha decidido en una de las cadenas previas FOWRARD o OUTPUT. Como hemos visto anteriormente, este es el caso de MASQUERADE. Sólo tiene sentido en el interfaz de salida. Esto lo vamos a denominar SNAT (source NAT).
+
+PREROUTING: Contiene los paquetes que acaban de entrar al sistema, independientemente de que estén generados por el mismo equipo o un equipo remoto.
+
+POSTROUTING: Contiene los paquetes que van a abandonar el sistema, independientemente de estén generados en el mismo equipo o en un equipo remoto.
+
+La política FORWARD permite al administrador controlar donde se enviaran los paquetes dentro de una LAN.
+
+[script ip-07-port-forwarding.sh](practica4/ip-07-port-forwarding.sh)
 
 #### __COMPROBACIONES__  
 
-## __Ejemplo 08:__
++ En este caso se indica que los paquetes enrutados al puerto 13 y los paquetes de entrada al puerto 13, serán rechazados:  
+```
+iptables -A FORWARD -p tcp --dport 13 -j REJECT
+iptables -A INPUT -p tcp --dport 13 -j REJECT
+```
+![](capturas/fire37.png)  
+
++ En estos casos lo que se hace es abrir los puertos 5001 y 5002 para también poder acceder al servicio del puerto 13 de 172.18.0.2 cuando nos entren externamente:  
+`iptables -t nat -A PREROUTING -p tcp --dport 5001 -j DNAT --to 172.18.0.2:13`  
+`iptables -t nat -A PREROUTING -p tcp --dport 5002 -j DNAT --to 172.18.0.3:13`  
+`iptables -t nat -A PREROUTING -p tcp --dport 5003 -j DNAT --to :13`  
+
+![](capturas/firewall11.png)  
+> Comprobamos desde el host2 que al hacer un telnet con al host principal con uno de los puertos asociados, los redirige al servicio daytime del puerto 13 del host de la red interna indicado.
+
++ En estos casos lo que se hace es abrir los puertos 6001 y 6002 para asociarlos al servicio del puerto 80 y 7 del host principal 192.168.1.104 y del host 172.18.0.2 respectivamente:  
+`iptables -t nat -A PREROUTING -p tcp --dport 6001 -j DNAT --to 192.168.1.104:80`  
+`iptables -t nat -A PREROUTING -p tcp --dport 6002 -j DNAT --to 172.18.0.2:7`  
+
+![](capturas/firewall12.png)  
+> Vemos que desde el host2 por el puerto abierto 6001 accedemos al servicio httpd del principal.  
+
+![](capturas/firewall13.png)  
+> Vemos que desde el host2 por el puerto abierto 6002 accedemos al servicio echo del hostA1.  
+
++ En este caso lo que se hace es que si el tráfico viene de 192.168.1.44 lo envía por el puerto 6000 para acceder al servicio del puerto 22 de cualquier host:  
+`iptables -t nat -A PREROUTING -s 192.168.1.44 -p tcp --dport 6000 -j DNAT --to :22`  
+
+![](capturas/firewall14.png)  
+> Vemos que desde el host2 por el puerto abierto 6000 accedemos al servicio ssh.
+
++ En este caso lo que se hace es que si el tráfico viene de 192.168.1.44 lo envía por el puerto 7080 para acceder al servicio del puerto 80 de host 192.168.1.44:  
+`iptables -t nat -A PREROUTING -s 192.168.1.44 -p tcp --dport 7080 -j DNAT --to 192.168.1.104:80`  
+
+![](capturas/firewall15.png)  
+> Vemos que desde el host2 por el puerto abierto 7080 accedemos al servicio httpd.
+
+
+## __Ejemplo 08: `ip-08-dmz.sh`__  
 
 #### __COMPROBACIONES__  
 
-## __Ejemplo 09:__
+## __Ejemplo 09: `ip-09-dmz.sh`__  
 
 #### __COMPROBACIONES__  
 
-## __Ejemplo 10:__
+## __Ejemplo 10: `ip-10-drop.sh`__  
 
 #### __COMPROBACIONES__  
 
-## __Ejemplo 11:__
+## __Ejemplo 11: `ip-11-practic-aula.sh`__  
 
 #### __COMPROBACIONES__  
