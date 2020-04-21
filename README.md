@@ -423,19 +423,19 @@ En este ejemplo vemos las reglas de forward, que consiste en aplicarlas cuando u
 
 
 ## __Ejemplo 07: `ip-07-port-forwarding.sh`__  
-DNAT Especifica que el la dirección de destino del paquete debe modificarse (y todos los paquetes futuros en este la conexión también será destrozada), y las reglas deberían dejar de ser examinadas.
+DNAT Especifica que el la dirección de destino del paquete debe modificarse y las reglas deberían dejar de ser examinadas.   
 
-La tabla de reglas NAT contiene tres listas llamadas «cadenas»: cada regla se examina por orden hasta que una coincide. Las tres cadenas se llaman PREROUTING (para Destination NAT, según los paquetes entran), POSTROUTING (para SOURCE NAT, según los paquetes salen), y OUTPUT (para Destination NAT con los paquetes generados en la propia máquina).
+La tabla de reglas NAT contiene tres listas llamadas «cadenas»: cada regla se examina por orden hasta que una coincide. Las tres cadenas se llaman PREROUTING (para Destination NAT, según los paquetes entran), POSTROUTING (para SOURCE NAT, según los paquetes salen), y OUTPUT (para Destination NAT con los paquetes generados en la propia máquina).  
 
-En el caso de PREROUTING podremos modifcar los datos destino de la conexión según nos interese y antes de tomar la deción de enrutamiento. Así podremos desviar paquetes que vayan destinados al host local hacia otro host y viceversa. Sólo tiene sentido en el interfaz de entrada. Esto lo vamos a llamar DNAT (destination NAT)..
+En el caso de PREROUTING podremos modifcar los datos destino de la conexión según nos interese y antes de tomar la deción de enrutamiento. Así podremos desviar paquetes que vayan destinados al host local hacia otro host y viceversa. Sólo tiene sentido en el interfaz de entrada. Esto lo vamos a llamar DNAT (destination NAT).  
 
-Cuando utilizamos la cadena POSTROUTING podremos modificar los paquetes justo antes de devolverlos a la red. Podremos modificar los datos de origen, porque el destino ya se ha decidido en una de las cadenas previas FOWRARD o OUTPUT. Como hemos visto anteriormente, este es el caso de MASQUERADE. Sólo tiene sentido en el interfaz de salida. Esto lo vamos a denominar SNAT (source NAT).
+Cuando utilizamos la cadena POSTROUTING podremos modificar los paquetes justo antes de devolverlos a la red. Podremos modificar los datos de origen, porque el destino ya se ha decidido en una de las cadenas previas FOWRARD o OUTPUT. Como hemos visto anteriormente, este es el caso de MASQUERADE. Sólo tiene sentido en el interfaz de salida. Esto lo vamos a denominar SNAT (source NAT).  
 
-PREROUTING: Contiene los paquetes que acaban de entrar al sistema, independientemente de que estén generados por el mismo equipo o un equipo remoto.
+PREROUTING: Contiene los paquetes que acaban de entrar al sistema, independientemente de que estén generados por el mismo equipo o un equipo remoto.  
 
-POSTROUTING: Contiene los paquetes que van a abandonar el sistema, independientemente de estén generados en el mismo equipo o en un equipo remoto.
+POSTROUTING: Contiene los paquetes que van a abandonar el sistema, independientemente de estén generados en el mismo equipo o en un equipo remoto.  
 
-La política FORWARD permite al administrador controlar donde se enviaran los paquetes dentro de una LAN.
+La política FORWARD permite al administrador controlar donde se enviaran los paquetes dentro de una LAN.  
 
 [script ip-07-port-forwarding.sh](practica4/ip-07-port-forwarding.sh)
 
@@ -488,8 +488,17 @@ iptables -A INPUT -p tcp --dport 13 -j REJECT
 #### __COMPROBACIONES__  
 
 ## __Ejemplo 10: `ip-10-drop.sh`__  
+DROP: Todo está prohibido excepto lo que explícitamente se permite. En este caso el script del firewall es el conjunto de reglas que permiten tráfico, lo que no esté contemplado está prohibido por defecto.  
+
+[script ip-10-drop.sh](practica4/ip-10-drop.sh)
 
 #### __COMPROBACIONES__  
+
++ Aquí vemos ejemplos que están permitidos porque están indicados explícitamente en el script:
+![](capturas/firewall16.png)  
+
++ Aquí vemos ejemplos que no están permitidos porque no están indicados explícitamente en el script:
+![](capturas/firewall17.png)
 
 ## __Ejemplo 11: `ip-11-practic-aula.sh`__  
 
