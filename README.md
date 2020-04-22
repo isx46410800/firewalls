@@ -37,7 +37,7 @@
 # EJEMPLOS  
 
 <a name="id00"></a>  
-## __Ejemplo Inicial: `ip-default.sh`__
+## __Ejemplo Inicial: ip-default.sh__
 En este ejemplo borramos todas las reglas actuales, establecemos una politica por defecto de todo abierto, permite todo el tráfico de entrada/salida en loopback y en nuestra IP host local. (Igualmente por defecto la politica por defecto ACCEPT ya lo hacía). También indicamos si el host hace de router, en este caso no.
 
 [script ip-default.sh](practica4/ip-default.sh)  
