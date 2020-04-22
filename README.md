@@ -1,5 +1,12 @@
 # <u>__PRÁCTICA 4 - FIREWALLS__</u>
+# **Índice**
+1. [IPs](#id1)   
+2. [Conceptos previos](#id2)  
+3. [EJEMPLOS](#id3)  
+    3.1. [Ejemplo Inicial: ip-default.sh](id00)  
 
+
+<a name="id1"></a>
 ## __IPs__
 + __IP host principal:__ 192.168.1.104  
 + __IP host 2:__ 192.168.1.44  
@@ -7,7 +14,9 @@
 `[isx46410800@miguel firewalls]$ docker run --rm --name net1 -h net1 --net mynet -d isx46410800/firewalls:net19`  
 `[isx46410800@miguel firewalls]$ docker run --rm --name net2 -h net2 --net mynet -d isx46410800/firewalls:net19`  
 `[isx46410800@miguel firewalls]$ docker run --rm --name net3 -h net3 --net mynet -d isx46410800/firewalls:net19`  
++ __IP nets:__ netA(172.18.0.0/16) / netB(172.19.0.0/16) / netZ(172.20.0.0/16)  
 
+<a name="id2"></a>  
 ## __Conceptos previos__  
 + __drop y reject:__ reject te informa del error mientras que drop agota el tiempo de espera sin notificar al momento del error de conexión.  
 + __related y established:__ ESTABLISHED el paquete seleccionado se asocia con otros paquetes en una conexión establecida mientras que RELATED el paquete seleccionado está iniciando una nueva conexión en algún punto de la conexión existente.
@@ -24,7 +33,10 @@
 + __--icmp-type 8:__ ICMP type 8, Echo request message.  
 + __--icmp-type 0:__ ICMP type 0, Echo reply message.  
 
+<a name="id3"></a>  
+# EJEMPLOS  
 
+<a name="id00"></a>  
 ## __Ejemplo Inicial: `ip-default.sh`__
 En este ejemplo borramos todas las reglas actuales, establecemos una politica por defecto de todo abierto, permite todo el tráfico de entrada/salida en loopback y en nuestra IP host local. (Igualmente por defecto la politica por defecto ACCEPT ya lo hacía). También indicamos si el host hace de router, en este caso no.
 
@@ -75,12 +87,12 @@ En nuestro caso empleamos dos ordenadores, el principal y el host2. Hemos establ
 
 ![](capturas/firewall5.png)
 
-## __Ejemplo 02: `ip-02-ouput.sh__
+## __Ejemplo 02: `ip-02-output.sh`__
 En este ejemplo continuamos con la misma parte de por defecto pero ahora establecemos unas serie de reglas `OUTPUT` para el tráfico de SALIDA por nuestro puerto 13. Los diferentes puertos abiertos relacionados con el puerto 13 del servicio daytime están configurados en `/etc/xinetd.d/`.  
 
 En nuestro caso empleamos dos ordenadores, el principal (con 3 hosts de containers) y el host2. Hemos establecido reglas en que según que puerto indiquemos (2013,3013...) permitiremos que nuestro principal pueda o no acceder al host2 o a los host de los containers. Las reglas iptables en este apartado están puestas en el principal.  
 
-[script ip-02-ouput.sh](practica4/ip-02-ouput.sh)  
+[script ip-02-output.sh](practica4/ip-02-output.sh)  
 
 #### __COMPROBACIONES__  
 + Acceder a port 13 de cualquier destino:  
@@ -578,10 +590,10 @@ iptables -A FORWARD  -s 172.18.0.0/16 -o enp4s0 -p tcp --sport 22 -m state --sta
 ![](capturas/fire43.png)  
 > En cambio, cuando es el alguno sitio de netA no se puede.  
 
-## __Ejemplo 09: `ip-09-dmz.sh`__  
+## __Ejemplo 09: `ip-09-dmz2.sh`__  
 En este ejemplo seguimos con la estructura DMZ con otros casos:  
 
-[script ip-09-dmz.sh](practica4/ip-09-dmz.sh)
+[script ip-09-dmz2.sh](practica4/ip-09-dmz2.sh)
 
 #### __COMPROBACIONES__  
 
