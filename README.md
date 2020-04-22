@@ -579,8 +579,40 @@ iptables -A FORWARD  -s 172.18.0.0/16 -o enp4s0 -p tcp --sport 22 -m state --sta
 > En cambio, cuando es el alguno sitio de netA no se puede.  
 
 ## __Ejemplo 09: `ip-09-dmz.sh`__  
+En este ejemplo seguimos con la estructura DMZ con otros casos:  
+
+[script ip-09-dmz.sh](practica4/ip-09-dmz.sh)
 
 #### __COMPROBACIONES__  
+
++ Desde un host exterior, acceder al servicio ldap de la DMZ:  
+`iptables -t nat -A PREROUTING -p tcp --dport 389 -i enp4s0 -j DNAT --to 172.20.0.6:389`  
+`iptables -t nat -A PREROUTING -p tcp --dport 636 -i enp4s0 -j DNAT --to 172.20.0.6:636`  
+> Para que funcione desde el host exterior instalamos los paquetes correspondientes a ldap y editamos el file de conf del cliente indicando: URI ldap://192.168.1.104 / BASE dc=edt,dc=org
+
+![](capturas/firewall22.png)  
+> Comprobamos que desde el host exterior al hacer la consulta al host principal, nos redirige al ldap del dmz5 donde teníamos nuestro server ldap.  
+
++ Desde un host exterior, acceder y obtener un ticket kerberos del server de la DMZ:  
+`iptables -t nat -A PREROUTING -p tcp --dport 88 -i enp4s0 -j DNAT --to 172.20.0.4:88`  
+`iptables -t nat -A PREROUTING -p tcp --dport 543 -i enp4s0 -j DNAT --to 172.20.0.4:543`  
+`iptables -t nat -A PREROUTING -p tcp --dport 749 -i enp4s0 -j DNAT --to 172.20.0.4:749`  
+`iptables -t nat -A PREROUTING -p tcp --dport 544 -i enp4s0 -j DNAT --to 172.20.0.4:544`  
+> En nuestro caso el host2 no tiene para hacer docker, instalamos kerberos cliente, configuramos los ficheros clientes y el /etc/hosts con la ip del principal, que redirigirá al server de la DMZ.  
+
+![](capturas/firewall23.png)  
+> Comprobamos que desde el host2 pedimos un ticket kerberos y éste conecta al ordenador principal que redirige al server kerberos de container kserver de la DMZ y nos da la validación correctamente.  
+
++ Desde un host exterior acceder a un recurso samba del server samba de la DMZ:   
+`iptables -t nat -A PREROUTING -p tcp --dport 139 -i enp4s0 -j DNAT --to 172.20.0.5:139`  
+`iptables -t nat -A PREROUTING -p tcp --dport 445 -i enp4s0 -j DNAT --to 172.20.0.5:445`  
+> En el host instalamos el samba-client para poder conectar al server de la DMZ  
+
+![](capturas/fire44.png)  
+> Comprobamos el contenido del samba server de la DMZ  
+
+![](capturas/firewall23.png)  
+> Comprobamos que desde el host2 accedemos a uno de los recursos que tiene DMZ4 pero ponemos la ip del host principal el cual nos redirigirá al container del server samba de la DMZ.  
 
 ## __Ejemplo 10: `ip-10-drop.sh`__  
 DROP: Todo está prohibido excepto lo que explícitamente se permite. En este caso el script del firewall es el conjunto de reglas que permiten tráfico, lo que no esté contemplado está prohibido por defecto.  
