@@ -3,11 +3,20 @@
 1. [IPs](#id1)   
 2. [Conceptos previos](#id2)  
 3. [EJEMPLOS](#id3)  
-    3.1. [Ejemplo Inicial: ip-default.sh](#id00)  
-
+    3.0. [Ejemplo Inicial: ip-default.sh](#id00)  
+    3.1. [Ejemplo 01: ip-.sh](#id01)
+    3.2. [Ejemplo 02: ip-.sh](#id02)
+    3.3. [Ejemplo 03: ip-.sh](#id03)
+    3.4. [Ejemplo 04: ip-.sh](#id04)
+    3.5. [Ejemplo 05: ip-.sh](#id05)
+    3.6. [Ejemplo 06: ip-.sh](#id06)
+    3.7. [Ejemplo 07: ip-.sh](#id07)
+    3.8. [Ejemplo 08: ip-.sh](#id08)
+    3.9. [Ejemplo 09: ip-.sh](#id09)
+    3.10. [Ejemplo 10: ip-.sh](#id10)
 
 <a name="id1"></a>
-## __IPs__
+## __1. IPs__
 + __IP host principal:__ 192.168.1.104  
 + __IP host 2:__ 192.168.1.44  
 + __IP dockers:__ 172.19.0.2  / 172.19.0.3 / 172.19.0.4  
@@ -17,7 +26,7 @@
 + __IP nets:__ netA(172.18.0.0/16) / netB(172.19.0.0/16) / netZ(172.20.0.0/16)  
 
 <a name="id2"></a>  
-## __Conceptos previos__  
+## __2. Conceptos previos__  
 + __drop y reject:__ reject te informa del error mientras que drop agota el tiempo de espera sin notificar al momento del error de conexión.  
 + __related y established:__ ESTABLISHED el paquete seleccionado se asocia con otros paquetes en una conexión establecida mientras que RELATED el paquete seleccionado está iniciando una nueva conexión en algún punto de la conexión existente.
 + __-j:__  tipo de salto/objetivo (accept, drop, reject...)
@@ -34,10 +43,10 @@
 + __--icmp-type 0:__ ICMP type 0, Echo reply message.  
 
 <a name="id3"></a>  
-# EJEMPLOS  
+# __3. EJEMPLOS__  
 
 <a name="id00"></a>  
-## __Ejemplo Inicial: `ip-default.sh`__
+## __3.0. Ejemplo Inicial: `ip-default.sh`__
 En este ejemplo borramos todas las reglas actuales, establecemos una politica por defecto de todo abierto, permite todo el tráfico de entrada/salida en loopback y en nuestra IP host local. (Igualmente por defecto la politica por defecto ACCEPT ya lo hacía). También indicamos si el host hace de router, en este caso no.
 
 [script ip-default.sh](practica4/ip-default.sh)  
@@ -68,8 +77,8 @@ target     prot opt source               destination
 
 ![](capturas/firewall3.png)
 
-
-## __Ejemplo 01: `ip-01-input.sh`__  
+<a name="id01"></a>  
+## __3.1. Ejemplo 01: `ip-01-input.sh`__  
 En este ejemplo continuamos con la misma parte de por defecto pero ahora establecemos unas serie de reglas `INPUT` para el tráfico de entrada por nuestro puerto 80. Los diferentes puertos abiertos relacionados con el puerto 80 de httpd están configurados en `/etc/xinetd.d/`.  
 
 En nuestro caso empleamos dos ordenadores, el principal y el host2. Hemos establecido reglas en que según que puerto indiquemos (2080,3080...) permitiremos que nuestro host2 pueda o no acceder o que otros hosts de la red puedan conectarnos por estos puertos. Las reglas iptables en este apartado están puestas en el host principal.  
@@ -87,7 +96,8 @@ En nuestro caso empleamos dos ordenadores, el principal y el host2. Hemos establ
 
 ![](capturas/firewall5.png)
 
-## __Ejemplo 02: `ip-02-output.sh`__
+<a name="id02"></a>  
+## __3.2. Ejemplo 02: `ip-02-output.sh`__
 En este ejemplo continuamos con la misma parte de por defecto pero ahora establecemos unas serie de reglas `OUTPUT` para el tráfico de SALIDA por nuestro puerto 13. Los diferentes puertos abiertos relacionados con el puerto 13 del servicio daytime están configurados en `/etc/xinetd.d/`.  
 
 En nuestro caso empleamos dos ordenadores, el principal (con 3 hosts de containers) y el host2. Hemos establecido reglas en que según que puerto indiquemos (2013,3013...) permitiremos que nuestro principal pueda o no acceder al host2 o a los host de los containers. Las reglas iptables en este apartado están puestas en el principal.  
@@ -161,7 +171,8 @@ En nuestro caso empleamos dos ordenadores, el principal (con 3 hosts de containe
 
 > Vemos que no podemos acceder a mynet por ningún puerto excepto por el 22 de ssh.
 
-## __Ejemplo 03: `ip-03-established.sh`__  
+<a name="id03"></a>  
+## __3.3. Ejemplo 03: `ip-03-established.sh`__  
 Conceptos del estado:  
 `--state — coincide un paquete con los siguientes estados de conexión:`  
 + ESTABLISHED: El paquete seleccionado se asocia con otros paquetes en una conexión establecida.
@@ -221,7 +232,8 @@ En este ejemplo trabajamos para ver la diferencia en no permitir un host acceder
 
 > Puedo establacer comunicaciones hacia fuera por el puerto 80, pero hacia dentro todos pueden excepto el host2
 
-## __Ejemplo 04:`ip-04-icmp.sh`__
+<a name="id04"></a>  
+## __3.4. Ejemplo 04:`ip-04-icmp.sh`__
 En este ejemplo utilizaremos unas reglas personalizadas para los pings que puede hacer o no nuestro ordenador principal respecto a diferentes casos configurados en iptables.  
 
 [script ip-04-icmp.sh](practica4/ip-04-icmp.sh)  
@@ -255,7 +267,8 @@ En este ejemplo utilizaremos unas reglas personalizadas para los pings que puede
 
 > Regla para que no podamos recibir respuesta de los pings que hagamos al exterior
 
-## __Ejemplo 05: `ip-05.nat.sh`__
+<a name="id05"></a>  
+## __3.5. Ejemplo 05: `ip-05.nat.sh`__
 En este ejemplo vemos el concepto de NAT, el cual hacemos que un host actue como router activando el bit de forwading. Permitiremos que redes internas de un host puedan comunicarse al exterior enmascarando su ip interna en la interficie local y externa del host que actua como router para poder hacer comunicaciones por un puerto de salida dinámico.  
 
 [script ip-05-nat.sh](practica4/ip-05-nat.sh)  
@@ -358,7 +371,8 @@ target     prot opt source               destination
 ![](capturas/fire26.png)  
 > Vemos que el HOSTB1 de la red netB tiene de nuevo conexión al exterior con host2 y 8.8.8.8
 
-## __Ejemplo 06: `ip-06-forward.sh`__  
+<a name="id06"></a>  
+## __3.6. Ejemplo 06: `ip-06-forward.sh`__  
 En este ejemplo vemos las reglas de forward, que consiste en aplicarlas cuando un router o firewall hace la tarea de encaminar los paquetes que lo cruzan.  
 
 [script ip-06-forward.sh](practica4/ip-06-forward.sh)
@@ -434,7 +448,8 @@ En este ejemplo vemos las reglas de forward, que consiste en aplicarlas cuando u
   `iptables -A FORWARD  ! -s 172.18.0.0/16 -i br-7d521247ea41 -j DROP`  
 
 
-## __Ejemplo 07: `ip-07-port-forwarding.sh`__  
+<a name="id07"></a>  
+## __3.7. Ejemplo 07: `ip-07-port-forwarding.sh`__  
 En este ejemplo utilizaremos el port forwading que usa DNAT. DNAT Especifica que el la dirección de destino del paquete debe modificarse y las reglas deberían dejar de ser examinadas.   
 
 La tabla de reglas NAT contiene tres listas llamadas «cadenas»: cada regla se examina por orden hasta que una coincide. Las tres cadenas se llaman PREROUTING (para Destination NAT, según los paquetes entran), POSTROUTING (para SOURCE NAT, según los paquetes salen), y OUTPUT (para Destination NAT con los paquetes generados en la propia máquina).  
@@ -491,7 +506,8 @@ iptables -A INPUT -p tcp --dport 13 -j REJECT
 > Vemos que desde el host2 por el puerto abierto 7080 accedemos al servicio httpd.
 
 
-## __Ejemplo 08: `ip-08-dmz.sh`__  
+<a name="id08"></a>  
+## __3.8. Ejemplo 08: `ip-08-dmz.sh`__  
 En este ejemplo creamos una estructura DMZ(DeMilitarized Zone) que es una infraestructura privada destinada a servidores segregados de las redes de hosts de usuarios y del exterior.  
 
 Hemos creado tres redes NETA, NETB Y NETZ(DMZ):  
@@ -590,7 +606,9 @@ iptables -A FORWARD  -s 172.18.0.0/16 -o enp4s0 -p tcp --sport 22 -m state --sta
 ![](capturas/fire43.png)  
 > En cambio, cuando es el alguno sitio de netA no se puede.  
 
-## __Ejemplo 09: `ip-09-dmz2.sh`__  
+
+<a name="id09"></a>  
+## __3.9. Ejemplo 09: `ip-09-dmz2.sh`__  
 En este ejemplo seguimos con la estructura DMZ con otros casos:  
 
 [script ip-09-dmz2.sh](practica4/ip-09-dmz2.sh)
@@ -626,7 +644,8 @@ En este ejemplo seguimos con la estructura DMZ con otros casos:
 ![](capturas/firewall23.png)  
 > Comprobamos que desde el host2 accedemos a uno de los recursos que tiene DMZ4 pero ponemos la ip del host principal el cual nos redirigirá al container del server samba de la DMZ.  
 
-## __Ejemplo 10: `ip-10-drop.sh`__  
+<a name="id10"></a>  
+## __3.10. Ejemplo 10: `ip-10-drop.sh`__  
 DROP: Todo está prohibido excepto lo que explícitamente se permite. En este caso el script del firewall es el conjunto de reglas que permiten tráfico, lo que no esté contemplado está prohibido por defecto.  
 
 [script ip-10-drop.sh](practica4/ip-10-drop.sh)
