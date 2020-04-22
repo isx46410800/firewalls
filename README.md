@@ -423,7 +423,7 @@ En este ejemplo vemos las reglas de forward, que consiste en aplicarlas cuando u
 
 
 ## __Ejemplo 07: `ip-07-port-forwarding.sh`__  
-DNAT Especifica que el la dirección de destino del paquete debe modificarse y las reglas deberían dejar de ser examinadas.   
+En este ejemplo utilizaremos el port forwading que usa DNAT. DNAT Especifica que el la dirección de destino del paquete debe modificarse y las reglas deberían dejar de ser examinadas.   
 
 La tabla de reglas NAT contiene tres listas llamadas «cadenas»: cada regla se examina por orden hasta que una coincide. Las tres cadenas se llaman PREROUTING (para Destination NAT, según los paquetes entran), POSTROUTING (para SOURCE NAT, según los paquetes salen), y OUTPUT (para Destination NAT con los paquetes generados en la propia máquina).  
 
@@ -480,8 +480,103 @@ iptables -A INPUT -p tcp --dport 13 -j REJECT
 
 
 ## __Ejemplo 08: `ip-08-dmz.sh`__  
+En este ejemplo creamos una estructura DMZ(DeMilitarized Zone) que es una infraestructura privada destinada a servidores segregados de las redes de hosts de usuarios y del exterior.  
+
+Hemos creado tres redes NETA, NETB Y NETZ(DMZ):  
++ NetA: dos hosts
++ NetB: dos hosts
++ NetZ: 5 servidores  
+
+```
+docker run --rm --name hostA1 -h hostA1 --net netA --privileged -d edtasixm11/net18:nethost
+docker run --rm --name hostA2 -h hostA2 --net netA --privileged -d edtasixm11/net18:nethost
+docker run --rm --name hostB1 -h hostB1 --net netB --privileged -d edtasixm11/net18:nethost
+docker run --rm --name hostB2 -h hostB2 --net netB --privileged -d edtasixm11/net18:nethost
+docker run --rm --name dmz1 -h dmz1 --net netDMZ --privileged -d edtasixm11/net18:nethost
+docker run --rm --name dmz2 -h dmz2 --net netDMZ --privileged -d edtasixm06/ldapserver:18group
+docker run --rm --name dmz3 -h dmz3 --net netDMZ --privileged -d edtasixm11/k18:kserver
+docker run --rm --name dmz4 -h dmz4 --net netDMZ --privileged -d edtasixm06/samba:18detach
+docker run --rm --name dmz5 -h dmz5 --net netDMZ --privileged -d edtasixm11/tls18:ldaps
+```
+
+[script ip-08-dmz.sh](practica4/ip-08-dmz.sh)  
 
 #### __COMPROBACIONES__  
+
++ De la netA solo pueden acceder a los servicios ssh y daytime del router:  
+`iptables -A INPUT -s 172.18.0.0/16 -p tcp --dport 22 -j ACCEPT`  
+`iptables -A INPUT -s 172.18.0.0/16 -p tcp --dport 13 -j ACCEPT`  
+`iptables -A INPUT -s 172.18.0.0/16 -j REJECT`  
+
+![](capturas/fire38.png)  
+> Comprobamos que desde un host de la netA podemos conectar por el puerto 13 y 22 pero no por otros.
+
++ De la netA podemos acceder a los servicios del exterior ssh, daytime y httpd:  
+`iptables -A FORWARD  -s 172.18.0.0/16 -p tcp --dport 80 -o enp4s0 -j ACCEPT`  
+`iptables -A FORWARD  -d 172.18.0.0/16 -p tcp --sport 80 -i enp4s0 -m state --state RELATED,ESTABLISHED -j ACCEPT`  
+`iptables -A FORWARD  -s 172.18.0.0/16 -p tcp --dport 22 -o enp4s0 -j ACCEPT`  
+`iptables -A FORWARD  -d 172.18.0.0/16 -p tcp --sport 22 -i enp4s0 -m state --state RELATED,ESTABLISHED -j ACCEPT`  
+`iptables -A FORWARD  -s 172.18.0.0/16 -p tcp --dport 2013 -o enp4s0 -j ACCEPT`  
+`iptables -A FORWARD  -d 172.18.0.0/16 -p tcp --sport 2013 -i enp4s0 -m state --state RELATED,ESTABLISHED -j ACCEPT`  
+`iptables -A FORWARD  -s 172.18.0.0/16 -o enp4s0 -j REJECT`  
+`iptables -A FORWARD  -d 172.18.0.0/16 -i enp4s0 -j REJECT`  
+
+![](capturas/fire39.png)  
+> Comprobamos que desde un host de la netA podemos conectar por el puerto 13, 22 y 80 al exterior.
+
++ De la netA solo podemos acceder de los servicios de la DMZ al servicio web:  
+`iptables -A FORWARD -s 172.18.0.0/16 -d 172.20.0.0/16 -p tcp --dport 80 -j ACCEPT`  
+`iptables -A FORWARD -s 172.18.0.0/16 -d 172.20.0.0/16 -j REJECT`  
+
+![](capturas/fire40.png)  
+> Comprobamos que desde un host de la netA acceder solo al servicio web pero no al resto de servicios.
+
++ Redirigir los puertos para que desde el exterior se tenga acceso a: 3001->hostA1:80, 3002->hostA2:2013, 3003->hostB1:2080, 3004->hostB2:3013:  
+`iptables -t nat -A PREROUTING -i enp4s0 -p tcp --dport 3001 -j DNAT --to 172.18.0.2:80`  
+`iptables -t nat -A PREROUTING -i enp4s0 -p tcp --dport 3002 -j DNAT --to 172.18.0.3:2013`  
+`iptables -t nat -A PREROUTING -i enp4s0 -p tcp --dport 3003 -j DNAT --to 172.19.0.2:2080`  
+`iptables -t nat -A PREROUTING -i enp4s0 -p tcp --dport 3004 -j DNAT --to 172.19.0.3:3013`  
+> Para que funcione hemos puesto unas reglas DMZ antes de todo que podremos ver en el script, un ejemplo:
+iptables -A FORWARD  -d 172.18.0.2 -i enp4s0 -p tcp --dport 80 -j ACCEPT  
+iptables -A FORWARD  -s 172.18.0.2 -o enp4s0 -p tcp --sport 80 -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+![](capturas/firewall18.png)  
+> Vemos que en efecto, accedemos al puerto 2013 y 3013 redireccionados al servicio daytime en los puertos 3002 y 3004
+
+![](capturas/firewall19.png)  
+> Vemos que en efecto, accedemos al puerto 80 y 2080 redireccionados al servicio web en los puertos 3001 y 3003
+
++ Se habilitan los puertos del 4001-4004 para acceder a los puertos ssh de: hostA1(4001), hostA2(4002), hostB1(4003), hostB2(4004).  
+`iptables -t nat -A PREROUTING -i enp4s0 -p tcp --dport 4001 -j DNAT --to 172.18.0.2:22`  
+`iptables -t nat -A PREROUTING -i enp4s0 -p tcp --dport 4002 -j DNAT --to 172.18.0.3:22`  
+`iptables -t nat -A PREROUTING -i enp4s0 -p tcp --dport 4003 -j DNAT --to 172.19.0.2:22`  
+`iptables -t nat -A PREROUTING -i enp4s0 -p tcp --dport 4004 -j DNAT --to 172.19.0.3:22`  
+> Para que funcione hemos puesto unas reglas DMZ antes de todo que podremos ver en el script, un ejemplo:
+iptables -A FORWARD  -d 172.18.0.0/16 -i enp4s0 -p tcp --dport 22 -j ACCEPT  
+iptables -A FORWARD  -s 172.18.0.0/16 -o enp4s0 -p tcp --sport 22 -m state --state ESTABLISHED,RELATED -j ACCEPT  
+
+![](capturas/firewall20.png)  
+> Vemos que en efecto, accedemos al puerto 22 redireccionados al servicio ssh en los puertos 4001-4004  
+
++ Se habilita el puerto 4000 para acceder al ssh del router/firewall si viene del host2:  
+`iptables -t nat -A PREROUTING -i enp4s0 -p tcp --dport 4000 -s 192.168.1.44 -j DNAT --to :22`  
+
+![](capturas/firewall21.png)  
+> Vemos que en efecto, accedemos al puerto 22 redireccionados al servicio ssh en el puerto 4000 al venir de la ip del host2.
+
+![](capturas/fire41.png)  
+> En cambio si viene de otras ips como la de HostA1, hostB1 o dmz1, no se puede.  
+
++ Los host de la netB tienen acceso a todo sitio excepto a netA:  
+`iptables -A FORWARD -s 172.19.0.0/16 -d 172.18.0.0/16 -j DROP`  
+`iptables -A FORWARD -s 172.19.0.0/16 -j ACCEPT`  
+`iptables -A FORWARD -d 172.19.0.0/16 -j ACCEPT`  
+
+![](capturas/fire42.png)  
+> Vemos que desde netB podemos acceder a todos los sitios  
+
+![](capturas/fire43.png)  
+> En cambio, cuando es el alguno sitio de netA no se puede.  
 
 ## __Ejemplo 09: `ip-09-dmz.sh`__  
 
@@ -499,7 +594,3 @@ DROP: Todo está prohibido excepto lo que explícitamente se permite. En este ca
 
 + Aquí vemos ejemplos que no están permitidos porque no están indicados explícitamente en el script:
 ![](capturas/firewall17.png)
-
-## __Ejemplo 11: `ip-11-practic-aula.sh`__  
-
-#### __COMPROBACIONES__  
