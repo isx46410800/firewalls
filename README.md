@@ -180,7 +180,7 @@ Conceptos del estado:
 + NEW: El paquete seleccionado o bien está creando una nueva conexión o bien forma parte de una conexión de dos caminos que antes no había sido vista.
 + RELATED: El paquete seleccionado está iniciando una nueva conexión en algún punto de la conexión existente.  
 
-En este ejemplo trabajamos para ver la diferencia en no permitir un host acceder a los servicios web externos (reglas OUTPUT) y en permitir el tráfico exterior al servidor web del propio host y permitir que este servidor emita respuestas http a los clientes (reglas INPUT). También tener en cuenta que para permitir el tráfico de respuesta será una regla OUTPUT.  
+En este ejemplo trabajamos para ver la diferencia en no permitir un host acceder a los servicios web externos (reglas OUTPUT) y en permitir el tráfico entrante al propio host por puerto 80.
 
 [script ip-03-established.sh](practica4/ip-03-established.sh)  
 
@@ -198,26 +198,28 @@ En este ejemplo trabajamos para ver la diferencia en no permitir un host acceder
 + Filtrar tráfico solo de respuesta:  
   `iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT`  
   `iptables -A INPUT  -p tcp --sport 80 -m tcp -m state --state RELATED,ESTABLISHED  -j ACCEPT`  
+  > En este ejemplo nuestro host principal hace de cliente y puede conectarse a cualquier servidor web via puerto 80 como por ejemplo google o al pc2. Por otra parte la regla de entrada nos indica que solo aceptaremos entradas de hosts a los que nosotros antes hayamos tenido comunicación y que provenga del pueto 80. Si no es así, se pueden rechazar las conexiones.  
 
 ![](capturas/fire18.png)  
 
-> Aquí vemos el filtrado por wireshark de una conexión de salida del principal al host2  
+> Aquí vemos el filtrado por wireshark de una conexión de salida del principal al host2. No hay problema de conexión a otros servers web via puerto 80.
 
 ![](capturas/fire19.png)  
 
-> Aquí vemos el filtrado por wireshark de una conexión de entrada de net1 al principal
+> Aquí vemos el filtrado por wireshark de una conexión de entrada de un host de net1 al principal. Es aceptada porque antes hemos tenido conexión y viene del puerto 80.
 
 + Ofrecer el servicio web, permitir solo respuestas a peticiones ya establecidas:  
   `iptables -A OUTPUT -p tcp --sport 80 -m tcp -m state --state RELATED,ESTABLISHED -j ACCEPT`     
   `iptables -A INPUT -p tcp --dport 80 -j ACCEPT`  
+  > En este ejemplo, todas las conexiones entrantes por el puerto 80 son aceptadas. Por otra parte, solo podemos hacer conexiones al exterior por el puerto 80 con aquellos hosts que hayan antes tenido comunicación con nosotros via puerto 80.  
 
 ![](capturas/firewall10.png)  
 
-> Aquí vemos el filtrado por wireshark de una conexión de salida de host2 al principal
+> Aquí vemos el filtrado por wireshark de una conexión de entrada de host2 al principal. Por lo tanto, vemos que tenemos conexiones entrantes y las aceptamos sin problemas.
 
 ![](capturas/fire20.png)  
 
-> Aquí vemos el filtrado por wireshark de una conexión de entrada de host2 al principal
+> Aquí vemos el filtrado por wireshark de una conexión de salida del principal al host2. Podemos establecer esta conexión sin problemas ya que antes hemos recibido una conexión del host 2 entrante por el puerto 80.  
 
 + Ofrecer el servicio web a todos excepto a host2:  
   `iptables -A OUTPUT -p tcp --sport 80 -m tcp -m state --state RELATED,ESTABLISHED -j ACCEPT`  
@@ -375,6 +377,8 @@ target     prot opt source               destination
 ## __3.6. Ejemplo 06: `ip-06-forward.sh`__  
 En este ejemplo vemos las reglas de forward, que consiste en aplicarlas cuando un router o firewall hace la tarea de encaminar los paquetes que lo cruzan.  
 
+La política FORWARD permite al administrador controlar donde se enviaran los paquetes dentro de una LAN.  
+
 [script ip-06-forward.sh](practica4/ip-06-forward.sh)
 
 #### __COMPROBACIONES__  
@@ -461,8 +465,6 @@ Cuando utilizamos la cadena POSTROUTING podremos modificar los paquetes justo an
 PREROUTING: Contiene los paquetes que acaban de entrar al sistema, independientemente de que estén generados por el mismo equipo o un equipo remoto.  
 
 POSTROUTING: Contiene los paquetes que van a abandonar el sistema, independientemente de estén generados en el mismo equipo o en un equipo remoto.  
-
-La política FORWARD permite al administrador controlar donde se enviaran los paquetes dentro de una LAN.  
 
 [script ip-07-port-forwarding.sh](practica4/ip-07-port-forwarding.sh)
 
@@ -652,8 +654,10 @@ DROP: Todo está prohibido excepto lo que explícitamente se permite. En este ca
 
 #### __COMPROBACIONES__  
 
-+ Aquí vemos ejemplos que están permitidos porque están indicados explícitamente en el script:
++ Aquí vemos ejemplos que están permitidos porque están indicados explícitamente en el script:  
+
 ![](capturas/firewall16.png)  
 
-+ Aquí vemos ejemplos que no están permitidos porque no están indicados explícitamente en el script:
++ Aquí vemos ejemplos que no están permitidos porque no están indicados explícitamente en el script:  
+
 ![](capturas/firewall17.png)
